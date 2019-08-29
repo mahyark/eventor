@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">eventor</string>
+    <string name="app_name">Eventor</string>
+    <string name="title_activity_event_list">MainActivity</string>
+    <string name="title_list">Eventlist</string>
+    <string name="title_map">Eventmap</string>
+    <string name="title_user">Account</string>
 </resources>
