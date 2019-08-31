@@ -18,9 +18,13 @@ android {
         }
     }
 }
+repositories {
+    mavenCentral()
+}
 
 dependencies {
     def room_version = "2.2.0-beta01"
+    implementation 'org.osmdroid:osmdroid-android:6.1.0'
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
     implementation fileTree(dir: 'libs', include: ['*.jar'])
