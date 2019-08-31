@@ -1,5 +1,6 @@
 package com.eventor.activities;
 
+import android.app.IntentService;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -39,6 +40,8 @@ public class SplashActivity extends AppCompatActivity {
                 .findViewById(android.R.id.content)).getChildAt(0);
         pgsBar = (ProgressBar)findViewById(R.id.pBar);
 
+        // database.activityDao().removeAllActivities();
+
         final List<Activity> activities = database.activityDao().getAllActivity();
         if (activities.size()==0) {
             new GetContacts().execute();
@@ -65,47 +68,70 @@ public class SplashActivity extends AppCompatActivity {
         protected Void doInBackground(Void... arg0) {
             HttpHandler sh = new HttpHandler();
             // Making a request to url and getting response
-            String url = "https://opendata.arcgis.com/datasets/b5f4516df41545299730850103c6443d_643.geojson";
-            String jsonStr = sh.makeServiceCall(url);
+            String urlSporthal = "https://opendata.arcgis.com/datasets/b5f4516df41545299730850103c6443d_643.geojson";
+            String urlZwembad = "https://opendata.arcgis.com/datasets/b760e319033841348469bacb34c5e259_644.geojson";
+            String urlCultuur = "https://opendata.arcgis.com/datasets/5ccff54ed791480aa91bc8f5fcf2e9ab_292.geojson";
+            String urlErfgoed = "https://opendata.arcgis.com/datasets/1318485a5b5f4bb0b17f4547dfef929f_293.geojson";
+            String jsonStrSporthal = sh.makeServiceCall(urlSporthal);
+            String jsonStrZwembad = sh.makeServiceCall(urlZwembad);
+            String jsonStrCultuur = sh.makeServiceCall(urlCultuur);
+            String jsonStrErfgoed = sh.makeServiceCall(urlErfgoed);
 
-            if (jsonStr != null) {
+            if (jsonStrSporthal != null && jsonStrZwembad != null && jsonStrCultuur != null && jsonStrErfgoed != null) {
                 try {
-                    JSONObject jsonObj = new JSONObject(jsonStr);
+                    JSONObject jsonObjSporthal = new JSONObject(jsonStrSporthal);
+                    JSONObject jsonObjZwembad = new JSONObject(jsonStrZwembad);
+                    JSONObject jsonObjCultuur = new JSONObject(jsonStrCultuur);
+                    JSONObject jsonObjErfgoed = new JSONObject(jsonStrErfgoed);
 
                     // Getting JSON Array node
-                    JSONArray features = jsonObj.getJSONArray("features");
+                    JSONArray features = jsonObjSporthal.getJSONArray("features");
 
-                    // looping through All Contacts
+                    // looping through All Sporthalls
                     for (int i = 0; i < features.length(); i++) {
                         JSONObject activity = features.getJSONObject(i);
-                        JSONObject activityProps = activity.getJSONObject("properties");
-                        Log.d("Testing: ", activityProps.toString());
-                        /*
-                        String id = c.getString("id");
-                        String name = c.getString("name");
-                        String email = c.getString("email");
-                        String address = c.getString("address");
-                        String gender = c.getString("gender");
-
-                        // Phone node is JSON Object
-                        JSONObject phone = c.getJSONObject("phone");
-                        String mobile = phone.getString("mobile");
-                        String home = phone.getString("home");
-                        String office = phone.getString("office");
-
-                        // tmp hash map for single contact
-                        HashMap<String, String> contact = new HashMap<>();
-
-                        // adding each child node to HashMap key => value
-                        contact.put("id", id);
-                        contact.put("name", name);
-                        contact.put("email", email);
-                        contact.put("mobile", mobile);
-
-                        // adding contact to contact list
-                        contactList.add(contact);
-                        */
+                        JSONObject aProps = activity.getJSONObject("properties");
+                        if (aProps.getString("publiek").equals("openbaar")) {
+                            database.activityDao().addActivity(new Activity(database.activityDao().getNextId(), aProps.getString("naam"), aProps.getString("straat"), aProps.getString("type"),
+                                    aProps.getString("pero"), aProps.getString("huisnummer"), aProps.getInt("postcode"), aProps.getString("district")));
+                        }
                     }
+
+                    // Getting JSON Array node
+                    features = jsonObjZwembad.getJSONArray("features");
+
+                    // looping through All Swimminghalls
+                    for (int i = 0; i < features.length(); i++) {
+                        JSONObject activity = features.getJSONObject(i);
+                        JSONObject aProps = activity.getJSONObject("properties");
+                        if (aProps.getString("publiek").equals("openbaar")) {
+                            database.activityDao().addActivity(new Activity(database.activityDao().getNextId(), aProps.getString("naam"), aProps.getString("straat"), aProps.getString("type"),
+                                    aProps.getString("pero"), aProps.getString("huisnummer"), aProps.getInt("postcode"), aProps.getString("district")));
+                        }
+                    }
+
+                    // Getting JSON Array node
+                    features = jsonObjCultuur.getJSONArray("features");
+
+                    // looping through All Cultural places
+                    for (int i = 0; i < features.length(); i++) {
+                        JSONObject feature = features.getJSONObject(i);
+                        JSONObject aProps = feature.getJSONObject("properties");
+                        database.activityDao().addActivity(new Activity(database.activityDao().getNextId(), aProps.getString("naam"), aProps.getString("straat"), aProps.getString("type"),
+                                aProps.getString("categorie"), aProps.getString("huisnr"), aProps.getInt("postcode"), aProps.getString("gemeente")));
+                    }
+
+                    // Getting JSON Array node
+                    features = jsonObjErfgoed.getJSONArray("features");
+
+                    // looping through All Historic places
+                    for (int i = 0; i < features.length(); i++) {
+                        JSONObject feature = features.getJSONObject(i);
+                        JSONObject aProps = feature.getJSONObject("properties");
+                        database.activityDao().addActivity(new Activity(database.activityDao().getNextId(), aProps.getString("naam"), aProps.getString("straat"), aProps.getString("type"),
+                                aProps.getString("categorie"), aProps.getString("huisnr"), aProps.getInt("postcode"), aProps.getString("gemeente")));
+                    }
+
                 } catch (final JSONException e) {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
                     runOnUiThread(new Runnable() {
@@ -116,9 +142,7 @@ public class SplashActivity extends AppCompatActivity {
                                     Toast.LENGTH_LONG).show();
                         }
                     });
-
                 }
-
             } else {
                 Log.e(TAG, "Couldn't get json from server.");
                 runOnUiThread(new Runnable() {
@@ -130,10 +154,8 @@ public class SplashActivity extends AppCompatActivity {
                     }
                 });
             }
-
             return null;
         }
-
 
         @Override
         protected void onPostExecute(Void result) {
