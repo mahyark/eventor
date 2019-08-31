@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Eventor</string>
     <string name="title_activity_event_list">MainActivity</string>
-    <string name="title_list">Eventlist</string>
-    <string name="title_map">Eventmap</string>
+    <string name="title_list">Activiteiten Lijst</string>
+    <string name="title_map">Activiteiten Map</string>
     <string name="title_user">Account</string>
 </resources>
