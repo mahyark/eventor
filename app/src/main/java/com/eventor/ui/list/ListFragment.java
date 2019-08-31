@@ -1,6 +1,7 @@
 package com.eventor.ui.list;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -19,23 +20,33 @@ import java.util.Arrays;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentTransaction;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.eventor.AppDatabase;
+import com.eventor.MainActivity;
 import com.eventor.R;
+import com.eventor.ui.listItem.ListItemFragment;
+import com.eventor.model.Activity;
+
+import org.json.JSONObject;
 
 public class ListFragment extends Fragment {
-
+    private AppDatabase db;
     private List<String> activities;
     private ArrayList<String> listItems;
     private ArrayAdapter<String> adapter;
     private ListView listView;
     private EditText editText;
+    private final static int REQUEST_CODE_1 = 1;
 
     public void searchItem(String textToSearch){
+        Log.d("testItems", listItems.toString());
+        Log.d("testItems", textToSearch);
         for(String a:activities){
             if(!a.toLowerCase().contains(textToSearch.toLowerCase())){
                 listItems.remove(a);
@@ -45,7 +56,7 @@ public class ListFragment extends Fragment {
     }
 
     public void initList(){
-        AppDatabase db = AppDatabase.getDatabase(getActivity());
+        db = AppDatabase.getDatabase(getActivity());
         List<String> items = new ArrayList<String>(db.activityDao().getActivityNames());
         activities = items;
         listItems = new ArrayList<String>(activities);
@@ -66,9 +77,20 @@ public class ListFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                Toast.makeText(getActivity(),
-                        position + " " + listView.getItemAtPosition(position), Toast.LENGTH_LONG)
-                        .show();
+                db = AppDatabase.getDatabase(getActivity());
+                String[] aProps = listView.getItemAtPosition(position).toString().split("~");
+                Activity selectedActivity = new Activity(db.activityDao().getActivity(aProps[0].trim(), aProps[1].trim()));
+
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("selectedActivity", selectedActivity);
+
+                Fragment frag = new ListItemFragment();
+                frag.setArguments(bundle);
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                ft.replace(R.id.nav_host_fragment, frag);
+                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                ft.addToBackStack(null);
+                ft.commit();
             }
         });
 
