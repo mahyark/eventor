@@ -45,8 +45,8 @@ public class ListFragment extends Fragment {
     private final static int REQUEST_CODE_1 = 1;
 
     public void searchItem(String textToSearch){
-        Log.d("testItems", listItems.toString());
-        Log.d("testItems", textToSearch);
+        listItems.clear();
+        listItems.addAll(activities);
         for(String a:activities){
             if(!a.toLowerCase().contains(textToSearch.toLowerCase())){
                 listItems.remove(a);
@@ -62,7 +62,6 @@ public class ListFragment extends Fragment {
         listItems = new ArrayList<String>(activities);
         adapter = new ArrayAdapter<String>(getContext(), R.layout.list_item, R.id.txtitem, listItems);
         listView.setAdapter(adapter);
-
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
